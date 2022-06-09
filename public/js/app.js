@@ -22550,7 +22550,8 @@ var __default__ = {
     return {
       color: '#000',
       image: '',
-      isInsertImage: false
+      isInsertImage: false,
+      gallery: []
     };
   },
   mounted: function mounted() {
@@ -22577,23 +22578,59 @@ var __default__ = {
     canvas.addEventListener('mouseleave', this.endPaintEvent);
     this.canvas = canvas;
     this.ctx = ctx;
+    this.getGallery();
   },
   methods: {
+    setIntoCanvas: function setIntoCanvas(e) {
+      var _this = this;
+
+      var base_image = new Image();
+      base_image.src = e.target.src;
+
+      base_image.onload = function () {
+        _this.ctx.drawImage(base_image, 0, 0);
+      };
+    },
+    getGallery: function getGallery() {
+      var _this2 = this;
+
+      axios.get("/images").then(function (response) {
+        var _response$data;
+
+        _this2.gallery = (_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.data;
+      })["catch"](function (error) {});
+    },
     sendToGallery: function sendToGallery() {
-      var dataURL = this.canvas.toDataURL();
-      console.log(dataURL);
+      var _this3 = this;
+
+      this.canvas.toBlob(function (blob) {
+        var formData = new FormData();
+        formData.append('image', blob);
+        axios.post("/images", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          transformRequest: function transformRequest(data, error) {
+            return formData;
+          }
+        }).then(function (response) {
+          var _response$data2;
+
+          _this3.gallery = (_response$data2 = response.data) === null || _response$data2 === void 0 ? void 0 : _response$data2.data;
+        })["catch"](function (error) {});
+      });
     },
     setInsertImage: function setInsertImage() {
       this.isInsertImage = true;
     },
     insertImage: function insertImage(x, y) {
-      var _this = this;
+      var _this4 = this;
 
       var base_image = new Image();
       base_image.src = this.image;
 
       base_image.onload = function () {
-        _this.ctx.drawImage(base_image, x, y);
+        _this4.ctx.drawImage(base_image, x, y);
       };
     },
     uploadImage: function uploadImage(e) {
@@ -24080,16 +24117,13 @@ var _hoisted_27 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_28 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "gallery"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "img-card"
-  })], -1
-  /* HOISTED */
-  );
-});
-
+var _hoisted_28 = {
+  "class": "gallery grid grid-cols-4"
+};
+var _hoisted_29 = {
+  "class": "p-4"
+};
+var _hoisted_30 = ["src"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)($setup["Head"], {
     title: "Canvas"
@@ -24175,8 +24209,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onClick: _cache[3] || (_cache[3] = function () {
       return $options.setInsertImage && $options.setInsertImage.apply($options, arguments);
     }),
-    "class": "btn"
-  }, " Вставить ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_25, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["btn", {
+      background_grey: $data.isInsertImage
+    }])
+  }, " Вставить ", 2
+  /* CLASS */
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_25, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     type: "button",
     "class": "btn",
     onClick: _cache[4] || (_cache[4] = function () {
@@ -24184,7 +24222,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   }, " Сохранить ")]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("canvas", _hoisted_26, null, 512
   /* NEED_PATCH */
-  )]), _hoisted_27, _hoisted_28])])])], 64
+  )]), _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.gallery, function (image) {
+    return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_29, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+      src: image.url,
+      alt: "",
+      onClick: _cache[5] || (_cache[5] = function () {
+        return $options.setIntoCanvas && $options.setIntoCanvas.apply($options, arguments);
+      })
+    }, null, 8
+    /* PROPS */
+    , _hoisted_30)]);
+  }), 256
+  /* UNKEYED_FRAGMENT */
+  ))])])])])], 64
   /* STABLE_FRAGMENT */
   );
 }
@@ -24533,7 +24583,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "\n#app[data-v-7c90bf7e] {\n  font-family: 'Avenir', Helvetica, Arial, sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n  text-align: center;\n  color: #2c3e50;\n  margin-top: 60px;\n}\ncanvas[data-v-7c90bf7e] {\n  background: #fff;\n}\n.main[data-v-7c90bf7e] {\n  display: flex;\n  justify-content: center;\n}\n.color-guide[data-v-7c90bf7e] {\n  margin: 20px 40px;\n}\nh5[data-v-7c90bf7e] {\n  margin-top: 10px;\n  margin-bottom: 10px;\n}\n.btn[data-v-7c90bf7e] {\n  border-radius: 2px;\n  border: solid 1px;\n  background-color: #fff;\n  padding: 5px;\n  margin-top: 5px;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "\n#app[data-v-7c90bf7e] {\n  font-family: 'Avenir', Helvetica, Arial, sans-serif;\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n  text-align: center;\n  color: #2c3e50;\n  margin-top: 60px;\n}\ncanvas[data-v-7c90bf7e] {\n  background: #fff;\n}\n.main[data-v-7c90bf7e] {\n  display: flex;\n  justify-content: center;\n}\n.color-guide[data-v-7c90bf7e] {\n  margin: 20px 40px;\n}\nh5[data-v-7c90bf7e] {\n  margin-top: 10px;\n  margin-bottom: 10px;\n}\n.btn[data-v-7c90bf7e] {\n  border-radius: 2px;\n  border: solid 1px;\n  background-color: #fff;\n  padding: 5px;\n  margin-top: 5px;\n}\n.background_grey[data-v-7c90bf7e] {\n  background-color: #555;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

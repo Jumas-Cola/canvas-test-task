@@ -79,6 +79,7 @@ defineProps({
               type="button"
               @click="setInsertImage"
               class="btn"
+              :class="{background_grey: isInsertImage}"
             >
               Вставить
             </button>
@@ -91,8 +92,10 @@ defineProps({
         </div>
 
         <h2 class="text-lg mt-4">Галерея</h2>
-        <div class="gallery">
-          <div class="img-card"></div>
+        <div class="gallery grid grid-cols-4">
+          <div v-for="image in gallery" class="p-4">
+            <img :src="image.url" alt="" @click="setIntoCanvas" />
+          </div>
         </div>
       </div>
     </div>
@@ -106,6 +109,7 @@ export default {
       color: '#000',
       image: '',
       isInsertImage: false,
+      gallery: [],
     };
   },
   mounted() {
@@ -135,11 +139,43 @@ export default {
 
     this.canvas = canvas;
     this.ctx = ctx;
+
+    this.getGallery();
   },
   methods: {
+    setIntoCanvas(e) {
+      let base_image = new Image();
+      base_image.src = e.target.src;
+      base_image.onload = () => {
+        this.ctx.drawImage(base_image, 0, 0);
+      };
+    },
+    getGallery() {
+      axios
+        .get(`/images`)
+        .then((response) => {
+          this.gallery = response.data?.data;
+        })
+        .catch((error) => {});
+    },
     sendToGallery() {
-      var dataURL = this.canvas.toDataURL();
-      console.log(dataURL);
+      this.canvas.toBlob((blob) => {
+        var formData = new FormData();
+        formData.append('image', blob);
+        axios
+          .post(`/images`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            transformRequest: (data, error) => {
+              return formData;
+            },
+          })
+          .then((response) => {
+            this.gallery = response.data?.data;
+          })
+          .catch((error) => {});
+      });
     },
     setInsertImage() {
       this.isInsertImage = true;
@@ -230,5 +266,9 @@ h5 {
   background-color: #fff;
   padding: 5px;
   margin-top: 5px;
+}
+
+.background_grey {
+  background-color: #555;
 }
 </style>
